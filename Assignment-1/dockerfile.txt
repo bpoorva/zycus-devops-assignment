@@ -1,0 +1,41 @@
+#Selects base image as centos6
+FROM centos:6
+MAINTAINER Poorva Bhandari (bhandaripoorva@gmail.com)
+
+#Install python2.7. Check version command : python2.7 -V
+RUN set -x \
+        && yum -y update \
+        && yum install gcc wget -y \
+        && cd /usr/src \
+        && wget https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz \
+        && tar xzf Python-2.7.13.tgz \
+        && cd Python-2.7.13 \
+        && ./configure \
+        && make altinstall
+
+#Install mongoDB. Check version command : mongod --version
+RUN set -x \
+&&  yum -y install epel-release \
+&& yum -y install mongodb-server \
+&&  mkdir -p /data/db \
+        && service mongod start \
+        && chkconfig mongod on
+
+#Default port for MongoDB is 27017
+EXPOSE 27017
+
+#Install Apache tomcat 7.Check version command : cd /usr/local/tomcat7/bin ./version.sh
+RUN set -x \
+        &&  yum install java-1.7.0 -y \
+        && cd /tmp \
+        && wget http://www.us.apache.org/dist/tomcat/tomcat-7/v7.0.79/bin/apache-tomcat-7.0.79.tar.gz \
+        && tar xzf apache-tomcat-7.0.79.tar.gz \
+        && mv apache-tomcat-7.0.79 /usr/local/tomcat7 \
+        &&  cd /usr/local/tomcat7 \
+        && ./bin/startup.sh
+
+#Default port for Apache Tomcat is 8080.Exposing the port to host so that the webpage is accessible.
+EXPOSE 8080
+
+#Run the Apache tomcat server.
+CMD ["/usr/local/tomcat7/bin/catalina.sh", "run"]
